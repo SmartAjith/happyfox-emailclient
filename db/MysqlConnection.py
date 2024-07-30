@@ -1,4 +1,3 @@
-# db_connection.py
 import mysql.connector
 from mysql.connector import Error
 import logging

@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_table(connection):
-    """ Create the emails table """
+    """ Create the emails table with auto-incrementing id """
     if connection is not None:
         create_table_query = """
         CREATE TABLE IF NOT EXISTS emails (
