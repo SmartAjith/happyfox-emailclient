@@ -1,6 +1,10 @@
-# create_table.py
 from MysqlConnection import create_connection
 from mysql.connector import Error
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_table(connection):
     """ Create the emails table """
@@ -23,13 +27,13 @@ def create_table(connection):
         try:
             cursor.execute(create_table_query)
             connection.commit()
-            print("Table 'emails' created successfully")
+            logging.info("Table 'emails' created successfully")
         except Error as e:
-            print(f"Error: '{e}'")
+            logging.error(f"Error: '{e}'")
         finally:
             cursor.close()
     else:
-        print("Error! Cannot create the table connection.")
+        logging.error("Error! Cannot create the table connection.")
 
 def main():    
     connection = create_connection("localhost", "root", "root", "happyFoxEmails")

@@ -1,5 +1,11 @@
+# db_connection.py
 import mysql.connector
 from mysql.connector import Error
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_connection(host_name, user_name, user_password, db_name=None):
     """ Create a database connection to the MySQL server """
@@ -12,10 +18,10 @@ def create_connection(host_name, user_name, user_password, db_name=None):
             database=db_name
         )
         if db_name:
-            print(f"Connected to MySQL database '{db_name}'")
+            logging.info(f"Connected to MySQL database '{db_name}'")
         else:
-            print(f"Connected to MySQL server")
+            logging.info("Connected to MySQL server")
     except Error as e:
-        print(f"Error: '{e}'")
+        logging.error(f"Error: '{e}'")
 
     return connection
