@@ -1,0 +1,26 @@
+[
+    {
+        "conditions": [
+            {
+                "field": "From",
+                "predicate": "contains",
+                "value": "careers@happyfox.com"
+            },
+            {
+                "field": "Subject",
+                "predicate": "contains",
+                "value": "Welcome to HappyFox"
+            },
+            {
+                "field": "Date Received",
+                "predicate": "less_than_days",
+                "value": "2"
+            }
+        ],
+        "predicate": "All",
+        "actions": [
+            "mark_as_read",
+            "move_to_folder:careers"
+        ]
+    }
+]
