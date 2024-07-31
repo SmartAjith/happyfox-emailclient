@@ -25,75 +25,80 @@ with open('resources/rules.json', 'r') as file:
 creds = authenticate_gmail()
 service = build('gmail', 'v1', credentials=creds)
 
+def filter_emails(rule):
+    conditions = rule['conditions']
+    rule_predicate = rule['predicate']
+    
+    query = "SELECT * FROM emails WHERE "
+    condition_clauses = []
+    values = []
+    
+    for condition in conditions:
+        field = condition['field']
+        predicate = condition['predicate']
+        value = condition['value']
+        
+        if field == 'From':
+            if predicate == 'contains':
+                condition_clauses.append("sender LIKE %s")
+                values.append(f"%{value}%")
+            elif predicate == 'equals':
+                condition_clauses.append("sender = %s")
+                values.append(value)
+            # Add other predicates as needed
+        elif field == 'Subject':
+            if predicate == 'contains':
+                condition_clauses.append("subject LIKE %s")
+                values.append(f"%{value}%")
+            elif predicate == 'equals':
+                condition_clauses.append("subject = %s")
+                values.append(value)
+        elif field == 'Date Received':
+            if predicate == 'less_than_days':
+                target_date = datetime.now() - timedelta(days=int(value))
+                condition_clauses.append("date_received > %s")
+                values.append(target_date)
+            elif predicate == 'greater_than_days':
+                target_date = datetime.now() - timedelta(days=int(value))
+                condition_clauses.append("date_received < %s")
+                values.append(target_date)
+            elif predicate == 'less_than_months':
+                target_date = datetime.now() - timedelta(days=int(value) * 30)
+                condition_clauses.append("date_received > %s")
+                values.append(target_date)
+            elif predicate == 'greater_than_months':
+                target_date = datetime.now() - timedelta(days=int(value) * 30)
+                condition_clauses.append("date_received < %s")
+                values.append(target_date)
+    
+    if rule_predicate == 'All':
+        query += " AND ".join(condition_clauses)
+    elif rule_predicate == 'Any':
+        query += " OR ".join(condition_clauses)
+    
+    cursor.execute(query, tuple(values))
+    emails = cursor.fetchall()
+    
+    return emails
+
+def apply_actions(email, actions):
+    for action in actions:
+        if action == 'mark_as_read':
+            logging.info(f"Marking email {email['id']} as read.")
+            mark_as_read(email['id'])
+        elif action == 'mark_as_unread':
+            logging.info(f"Marking email {email['id']} as unread.")
+            mark_as_unread(email['id'])
+        elif action.startswith('move_to_folder'):
+            folder = action.split(':')[1]
+            logging.info(f"Moving email {email['id']} to folder {folder}.")
+            move_to_folder(email['id'], folder)
+
 def apply_rules():
     for rule in rules:
-        conditions = rule['conditions']
-        rule_predicate = rule['predicate']
-        actions = rule['actions']
-        
-        query = "SELECT * FROM emails WHERE "
-        condition_clauses = []
-        values = []
-        
-        for condition in conditions:
-            field = condition['field']
-            predicate = condition['predicate']
-            value = condition['value']
-            
-            if field == 'From':
-                if predicate == 'contains':
-                    condition_clauses.append("sender LIKE %s")
-                    values.append(f"%{value}%")
-                elif predicate == 'equals':
-                    condition_clauses.append("sender = %s")
-                    values.append(value)
-                # Add other predicates as needed
-            elif field == 'Subject':
-                if predicate == 'contains':
-                    condition_clauses.append("subject LIKE %s")
-                    values.append(f"%{value}%")
-                elif predicate == 'equals':
-                    condition_clauses.append("subject = %s")
-                    values.append(value)
-            elif field == 'Date Received':
-                if predicate == 'less_than_days':
-                    target_date = datetime.now() - timedelta(days=int(value))
-                    condition_clauses.append("date_received > %s")
-                    values.append(target_date)
-                elif predicate == 'greater_than_days':
-                    target_date = datetime.now() - timedelta(days=int(value))
-                    condition_clauses.append("date_received < %s")
-                    values.append(target_date)
-                elif predicate == 'less_than_months':
-                    target_date = datetime.now() - timedelta(days=int(value) * 30)
-                    condition_clauses.append("date_received > %s")
-                    values.append(target_date)
-                elif predicate == 'greater_than_months':
-                    target_date = datetime.now() - timedelta(days=int(value) * 30)
-                    condition_clauses.append("date_received < %s")
-                    values.append(target_date)
-        
-        if rule_predicate == 'All':
-            query += " AND ".join(condition_clauses)
-        elif rule_predicate == 'Any':
-            query += " OR ".join(condition_clauses)
-        
-        cursor.execute(query, tuple(values))
-        emails = cursor.fetchall()
-        
+        emails = filter_emails(rule)
         for email in emails:
-            # Perform actions
-            for action in actions:
-                if action == 'mark_as_read':
-                    logging.info(f"Marking email {email['id']} as read.")
-                    mark_as_read(email['id'])
-                elif action == 'mark_as_unread':
-                    logging.info(f"Marking email {email['message_id']} as unread.")
-                    mark_as_unread(email['message_id'])
-                elif action.startswith('move_to_folder'):
-                    folder = action.split(':')[1]
-                    logging.info(f"Moving email {email['id']} to folder {folder}.")
-                    move_to_folder(email['id'], folder)
+            apply_actions(email, rule['actions'])
 
 def mark_as_read(message_id):
     service.users().messages().modify(
