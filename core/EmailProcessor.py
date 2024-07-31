@@ -7,13 +7,15 @@ from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from gmailOauth.EmailAuthentication import authenticate_gmail
 from db.MysqlConnection import create_connection
+from util.DBConfig import read_db_config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database connection
-db = create_connection("localhost", "root", "root", "happyFoxEmails")
+# Database connection 
+db_config = read_db_config()
+db = create_connection(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
 cursor = db.cursor(dictionary=True)
 
 # Load rules from JSON file

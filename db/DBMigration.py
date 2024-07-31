@@ -1,6 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from MysqlConnection import create_connection
 from mysql.connector import Error
 import logging
+from util.DBConfig import read_db_config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,8 +39,9 @@ def create_table(connection):
     else:
         logging.error("Error! Cannot create the table connection.")
 
-def main():    
-    connection = create_connection("localhost", "root", "root", "happyFoxEmails")
+def main():
+    db_config = read_db_config()
+    connection = create_connection(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
     create_table(connection)
     if connection is not None and connection.is_connected():
         connection.close()

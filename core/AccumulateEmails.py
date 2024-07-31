@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from FetchEmails import list_messages, get_message_details
 from db.MysqlConnection import create_connection
 from gmailOauth.EmailAuthentication import authenticate_gmail
+from util.DBConfig import read_db_config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -39,7 +40,8 @@ if __name__ == "__main__":
             # Fetch list of emails from the inbox
             messages = list_messages(service, max_results=10)
             logger.info(f"Found {len(messages)} messages.")
-            connection = create_connection("localhost", "root", "root", "happyFoxEmails")
+            db_config = read_db_config()
+            connection = create_connection(db_config['host'], db_config['user'], db_config['password'], db_config['database'])
             
             # Insert details of each message into Database
             for msg in messages:
