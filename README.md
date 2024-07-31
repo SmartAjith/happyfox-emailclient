@@ -24,9 +24,20 @@
 
 ### 3. Running the Script
 
-1. Ensure the `credentials.json` file is in your project directory.
-2. Run the script:
+1. Update the MYSQL details in resources/config.ini file
+2. Run the DBMigration file to create the tables required for this application.
     ```sh
-    python EmailAuthentication.py
+    python DBMigration.py
     ```
-3. Follow the on-screen instructions to authenticate via your browser. After successful authentication, a `token.json` file will be created to store your access and refresh tokens.
+
+3. Ensure the `credentials.json` file is in your project directory.
+4. Run the AccumulateEmails script to fetch latest emails from the access gmail account:
+    ```sh
+    python AccumulateEmails.py
+    ```
+5. Follow the on-screen instructions to authenticate via your browser. After successful authentication, a `token.json` file will be created to store your access and refresh tokens.
+6. Update the filter and action rules in resources/rules.json file
+7. Run the EmailProcessor file to filter the emails and apply the given action like read/unread/move messages to different labels.
+    ```sh
+    python EmailProcessor.py
+    ```
