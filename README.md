@@ -4,7 +4,7 @@
 2. **Python**: Ensure Python is installed on your system.
 3. **Gmail API and OAuth Libraries**: Install the required Python libraries.
     ```sh
-    pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+    pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client mysql-connector-python
     ```
 
 ## Steps for Integration
